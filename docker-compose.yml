@@ -5,11 +5,11 @@ services:
     build: ./
     command: ./wait-for-postgres.sh db ./go-test-lamoda
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
       - db
     environment:
-      - POSTGRES_PASSWORD=test
+      - DATABASE_URL=postgres://test:test@db:5432/lamoda_test?sslmode=disable
 
   db:
     restart: always
@@ -17,13 +17,13 @@ services:
     networks:
       new:
         aliases:
-          - database
+          - db
     volumes:
-      - ./.database/postgres/data:/var/lib/postgresql/data
+      - /path/to/database/data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=test
     ports:
-      - 5432:5432
+      - "5432:5432"
 
   migrate:
     image: migrate/migrate
@@ -31,8 +31,8 @@ services:
       - new
     volumes:
       - .:/migrations
-    command: ["-path", "/migrations", "-database",  "postgres://test:test@database:5432/lamoda_test?sslmode=disable", "up", "3"]
-    links:
+    command: ["-path", "./migrations", "-database",  "postgres://test:test@db:5432/lamoda_test?sslmode=disable", "up", "3"]
+    depends_on:
       - db
 
 networks:
