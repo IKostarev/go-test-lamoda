@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"go-test-lamoda/internal/database"
+	"go-test-lamoda/pkg/database"
 	"io"
 	"net/http"
 )

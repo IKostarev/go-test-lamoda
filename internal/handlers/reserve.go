@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"go-test-lamoda/internal/database"
+	"go-test-lamoda/pkg/database"
 	"net/http"
 )
 
