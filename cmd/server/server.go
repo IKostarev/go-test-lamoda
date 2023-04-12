@@ -1,78 +1,42 @@
 package main
 
 import (
-	"errors"
+	"database/sql"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 	"net/rpc/jsonrpc"
-)
 
-type Product struct {
-	Name     string `json:"name"`
-	Size     int    `json:"size"`
-	UniqCode int    `json:"uniq_code"`
-	Count    int    `json:"count"`
-}
+	_ "github.com/lib/pq"
+)
 
 type StockService struct {
 	count int
-	stock map[Product]int
-}
-
-func (s *StockService) GetCount(_ *struct{}, count *int) error {
-	*count = s.count
-	return nil
-}
-
-func (s *StockService) Release(product *Product, result *bool) error {
-	if count, ok := s.stock[*product]; ok && count >= product.Count {
-		s.stock[*product] -= product.Count
-		*result = true
-		return nil
-	}
-
-	*result = false
-	return errors.New("error")
-}
-
-func (s *StockService) Reverse(product *Product, result *bool) error {
-	if _, ok := s.stock[*product]; ok {
-		s.stock[*product] += product.Count
-	} else {
-		s.stock[*product] = product.Count
-	}
-
-	*result = true
-	return nil
+	db    *sql.DB
 }
 
 func main() {
-	stockService := &StockService{
-		count: 10,
-		stock: make(map[Product]int),
-	}
-
-	server := rpc.NewServer()
-	if err := server.Register(stockService); err != nil {
-		log.Fatal("Register error: ", err)
-	}
-
-	http.Handle("/jsonrpc", server)
-
-	listener, err := net.Listen("tcp", ":8080")
+	db, err := sql.Open("postgres", "postgres://user:password@localhost:5432/stockdb?sslmode=disable")
 	if err != nil {
-		log.Fatal("Listen error: ", err)
+		log.Fatal("Open Postgres error is: ", err)
 	}
-	defer listener.Close()
+	defer db.Close()
 
-	log.Println("Starting server on :8080")
+	service := &StockService{db: db}
+	rpc.Register(service)
+
+	listener, err := net.Listen("tcp", ":1234")
+	if err != nil {
+		log.Fatal("Have error in listen server: ", err)
+	}
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Fatal("Accept error: ", err)
+			log.Println("Error in connect Accepted: ", err)
+			continue
 		}
-		go server.ServeConn(jsonrpc.NewServerCodec(conn))
+
+		go jsonrpc.ServeConn(conn)
 	}
 }

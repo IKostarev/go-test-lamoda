@@ -13,7 +13,7 @@ type Product struct {
 }
 
 func main() {
-	client, err := jsonrpc.Dial("tcp", "localhost:8080")
+	client, err := jsonrpc.Dial("tcp", "localhost:1234")
 	if err != nil {
 		log.Fatal("Dial error: ", err)
 	}
@@ -35,5 +35,5 @@ func main() {
 	if err := client.Call("StockReserve", &Product{Name: "Product A", Size: 10, UniqCode: 111, Count: 2}, &reserveResult); err != nil {
 		log.Fatal("Reserve error: ", err)
 	}
-	log.Printf("Reseerve result: %t\n", reserveResult)
+	log.Printf("Reserve result: %t\n", reserveResult)
 }

@@ -5,11 +5,11 @@ services:
     build: ./
     command: ./wait-for-postgres.sh db ./go-test-lamoda
     ports:
-      - "8080:8080"
+      - "1234:1234"
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgres://test:test@db:5432/lamoda_test?sslmode=disable
+      - DATABASE_URL=postgres://user:password@db:5432/stockdb?sslmode=disable
 
   db:
     restart: always
@@ -21,7 +21,9 @@ services:
     volumes:
       - /path/to/database/data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=stockdb
     ports:
       - "5432:5432"
 
@@ -31,7 +33,7 @@ services:
       - new
     volumes:
       - .:/migrations
-    command: ["-path", "./migrations", "-database",  "postgres://test:test@db:5432/lamoda_test?sslmode=disable", "up", "3"]
+    command: ["-path", "./migrations", "-database",  "postgres://user:password@db:5432/stockdb?sslmode=disable", "up", "3"]
     depends_on:
       - db
 
